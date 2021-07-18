@@ -1,112 +1,83 @@
-package com.taghda.workingtestapplication.ui;
+package com.taghda.workingtestapplication.ui
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-
-import com.taghda.workingtestapplication.R;
-import com.taghda.workingtestapplication.data.local.ShoppingItem;
-import com.taghda.workingtestapplication.data.remote.responses.ExchangeRateResponse;
-import com.taghda.workingtestapplication.databinding.ActivityMainBinding;
-import com.taghda.workingtestapplication.repositories.DefaultNfcHelperReppository;
-
-import dagger.hilt.android.AndroidEntryPoint;
-
-import static android.content.ContentValues.TAG;
-import static com.taghda.workingtestapplication.databinding.ActivityMainBinding.inflate;
+import android.app.AlertDialog
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.appcompat.app.AppCompatActivity
+import javax.inject.Inject
+import com.taghda.workingtestapplication.ui.ShoppingViewModel
+import android.nfc.NfcAdapter
+import android.os.Bundle
+import com.taghda.workingtestapplication.R
+import android.content.DialogInterface
+import android.content.Intent
+import android.provider.Settings
+import androidx.activity.viewModels
+import androidx.lifecycle.ViewModelProvider
+import com.taghda.workingtestapplication.databinding.ActivityMainBinding
 
 @AndroidEntryPoint
-public class MainActivity extends AppCompatActivity {
+class MainActivity : AppCompatActivity() {
+    private var mDialog: AlertDialog? = null
+    private var binding: ActivityMainBinding? = null
+    private val viewModel: ShoppingViewModel by viewModels()
+    private var mAdapter: NfcAdapter? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(
+            layoutInflater
+        )
+        setContentView(binding!!.root)
 
-    private AlertDialog mDialog;
-    private ActivityMainBinding binding;
-    private ShoppingViewModel viewModel;
-    private NfcAdapter mAdapter;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        viewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
-        mDialog = new AlertDialog.Builder(this)
-                .setNeutralButton("Ok", null).create();
-
-
-        mAdapter = NfcAdapter.getDefaultAdapter(this);
-        viewModel.checkAndInitNFC();
-
-        binding.btn1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewModel.setUpFirstBalance(1, 2, "onClick: price1 minus 2$");
-            }
-        });
-
-        binding.btn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewModel.setUpFirstBalance(2, 5, "onClick: price1 minus 5$");
-            }
-        });
-
-        binding.btn3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewModel.setBalancesToInit();
-            }
-        });
-
-
+      //  viewModel = ViewModelProvider(this).get(ShoppingViewModel::class.java);
+        mDialog = AlertDialog.Builder(this)
+            .setNeutralButton("Ok", null).create()
+        mAdapter = NfcAdapter.getDefaultAdapter(this)
+        viewModel!!.checkAndInitNFC()
+        binding!!.btn1.setOnClickListener {
+            viewModel!!.setUpFirstBalance(
+                1,
+                2,
+                "onClick: price1 minus 2$"
+            )
+        }
+        binding!!.btn2.setOnClickListener {
+            viewModel!!.setUpFirstBalance(
+                2,
+                5,
+                "onClick: price1 minus 5$"
+            )
+        }
+        binding!!.btn3.setOnClickListener { viewModel!!.setBalancesToInit() }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    override fun onResume() {
+        super.onResume()
         if (mAdapter != null) {
-            if (!mAdapter.isEnabled()) {
-                showNfcSettingsDialog();
+            if (!mAdapter!!.isEnabled) {
+                showNfcSettingsDialog()
             }
         }
-
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    override fun onPause() {
+        super.onPause()
         if (mAdapter != null) {
-            mAdapter.disableForegroundDispatch(this);
-            mAdapter.disableForegroundNdefPush(this);
+            mAdapter!!.disableForegroundDispatch(this)
+            mAdapter!!.disableForegroundNdefPush(this)
         }
     }
+
     /*this method is used when nfc is not on then tho show a dialog box
      * and click to go setting on phone and tune on the nfc  */
-    private void showNfcSettingsDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.nfc_disabled);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialogInterface, int i) {
-                Intent intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
-                startActivity(intent);
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finish();
-            }
-        });
-        builder.create().show();
-        return;
+    private fun showNfcSettingsDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setMessage(R.string.nfc_disabled)
+        builder.setPositiveButton(android.R.string.ok) { dialogInterface, i ->
+            val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+            startActivity(intent)
+        }
+        builder.setNegativeButton(android.R.string.cancel) { dialogInterface, i -> finish() }
+        builder.create().show()
+        return
     }
-
 }

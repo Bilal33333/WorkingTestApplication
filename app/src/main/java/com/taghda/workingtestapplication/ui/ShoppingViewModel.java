@@ -17,6 +17,7 @@ import com.taghda.workingtestapplication.repositories.DefaultNfcHelperReppositor
 import com.taghda.workingtestapplication.repositories.NfcHelperRepository;
 import com.taghda.workingtestapplication.repositories.ShoppingRepository;
 
+import javax.inject.Inject;
 import dagger.hilt.android.qualifiers.ActivityContext;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 
@@ -38,6 +39,7 @@ class ShoppingViewModel extends ViewModel {
             , NfcHelperRepository nfcHelperRepository) {
         this.repository = repository;
         this.nfcHelperRepository = nfcHelperRepository;
+        this.context = context;
     }
 
     public void insertShoppingItemIntoDb( ShoppingItem shoppingItem) {
@@ -52,27 +54,26 @@ class ShoppingViewModel extends ViewModel {
         public void checkAndInitNFC() {
         mAdapter = NfcAdapter.getDefaultAdapter(context);
 
-        Tag tagFromIntent = new MainActivity().getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
-
-        if (mAdapter == null) {
-        showMessage("error", "no_nfc");
-        new MainActivity().finish();
-        }
-        if(String.valueOf(nfcHelperRepository.readTag(tagFromIntent,1)) == null){
-        nfcHelperRepository.writeTag(tagFromIntent,1 ,20);
-        nfcHelperRepository.writeTag(tagFromIntent,2 ,10);
-        }
-
+            if (mAdapter == null) {
+                showMessage("error", "no_nfc");
+                new MainActivity().finish();
+            }else {
+                Tag tagFromIntent = new MainActivity().getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                if (String.valueOf(nfcHelperRepository.readTag(tagFromIntent, 1)) == null) {
+                    nfcHelperRepository.writeTag(tagFromIntent, 1, 20);
+                    nfcHelperRepository.writeTag(tagFromIntent, 2, 10);
+                }
+            }
     }
 
     private void showMessage(String title, String message) {
-        Toast.makeText(context, title + " - " + message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, title + " - " + message, Toast.LENGTH_LONG).show();
     }
     public void setBalancesToInit() {
-        Tag tagFromIntent = new MainActivity().getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        /*Tag tagFromIntent = new MainActivity().getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
         nfcHelperRepository.writeTag(tagFromIntent,1 ,20);
         nfcHelperRepository.writeTag(tagFromIntent,2 ,10);
-        ExchangeRateResponse exchangeRateResponse = getRates_from_api();
+        */ExchangeRateResponse exchangeRateResponse = getRates_from_api();
         ShoppingItem shoppingItem = new ShoppingItem(1,1,10
         , 10
         , exchangeRateResponse.getRates().getEUR() * (10)
