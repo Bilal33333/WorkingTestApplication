@@ -27,10 +27,10 @@ import static com.taghda.workingtestapplication.databinding.ActivityMainBinding.
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
 
-    private NfcAdapter mAdapter;
     private AlertDialog mDialog;
     private ActivityMainBinding binding;
     private ShoppingViewModel viewModel;
+    private NfcAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,85 +42,32 @@ public class MainActivity extends AppCompatActivity {
         mDialog = new AlertDialog.Builder(this)
                 .setNeutralButton("Ok", null).create();
 
-        checkAndInitNFC();
+
+        mAdapter = NfcAdapter.getDefaultAdapter(this);
+        viewModel.checkAndInitNFC();
 
         binding.btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setUpFirstBalance(1, 2, "onClick: price1 minus 2$");
+                viewModel.setUpFirstBalance(1, 2, "onClick: price1 minus 2$");
             }
         });
 
         binding.btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setUpFirstBalance(2, 5, "onClick: price1 minus 5$");
+                viewModel.setUpFirstBalance(2, 5, "onClick: price1 minus 5$");
             }
         });
 
         binding.btn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setBalancesToInit();
+                viewModel.setBalancesToInit();
             }
         });
 
-    }
 
-    private void checkAndInitNFC() {
-        mAdapter = NfcAdapter.getDefaultAdapter(this);
-
-
-        Tag tagFromIntent = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        DefaultNfcHelperReppository nfcHelper = new DefaultNfcHelperReppository();
-
-        if (mAdapter == null) {
-            showMessage("error", "no_nfc");
-            finish();
-        }
-        if(String.valueOf(nfcHelper.readTag(tagFromIntent,1)) == null){
-            nfcHelper.writeTag(tagFromIntent,1 ,20);
-            nfcHelper.writeTag(tagFromIntent,2 ,10);
-        }
-    }
-
-    private void setBalancesToInit() {
-        Tag tagFromIntent = ;
-        DefaultNfcHelperReppository nfcHelper = ;
-        nfcHelper.writeTag(tagFromIntent,1 ,20);
-        nfcHelper.writeTag(tagFromIntent,2 ,10);
-        ExchangeRateResponse exchangeRateResponse = viewModel.getRates_from_api();
-        ShoppingItem shoppingItem = new ShoppingItem(1,1,10
-                , 10
-                , exchangeRateResponse.getRates().getEUR() * (10)
-                ,1);
-        viewModel.insertShoppingItemIntoDb(shoppingItem);
-        ShoppingItem shoppingItem2 = new ShoppingItem(1,1,20
-                , 20
-                , exchangeRateResponse.getRates().getEUR() * (20)
-                ,1);
-        viewModel.insertShoppingItemIntoDb(shoppingItem2);
-        Log.d(TAG, "onClick: return to initial values!!");
-    }
-
-    private void setUpFirstBalance(int i, int i2, String s) {
-        DefaultNfcHelperReppository nfcHelper = ;
-        Tag tagFromIntent = ;
-        int price = nfcHelper.readTag(tagFromIntent, i);
-        nfcHelper.writeTag(tagFromIntent, i, price - i2);
-        ExchangeRateResponse exchangeRateResponse = viewModel.getRates_from_api();
-        ShoppingItem shoppingItem = new ShoppingItem(i, i, price
-                , price - i2
-                , exchangeRateResponse.getRates().getEUR() * (price - i2)
-                , i);
-        viewModel.insertShoppingItemIntoDb(shoppingItem);
-
-        Log.d(TAG, s);
-    }
-
-
-    private void showMessage(String title, String message) {
-        Toast.makeText(this, title + " - " + message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
