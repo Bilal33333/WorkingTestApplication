@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WorkingTestApplication</string>
+    <string name="nfc_disabled">nfc disabled</string>
+</resources>
