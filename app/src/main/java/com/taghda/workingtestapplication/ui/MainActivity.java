@@ -37,74 +37,85 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        viewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
 
+        viewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
         mDialog = new AlertDialog.Builder(this)
                 .setNeutralButton("Ok", null).create();
-        mAdapter = NfcAdapter.getDefaultAdapter(this);
-        if (mAdapter == null) {
-            showMessage("error", "no_nfc");
-            finish();
-           }
-        Tag tagFromIntent = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        DefaultNfcHelperReppository nfcHelper = new DefaultNfcHelperReppository();
-        if(String.valueOf(nfcHelper.readTag(tagFromIntent,1)) == null){
-            nfcHelper.writeTag(tagFromIntent,1 ,20);
-            nfcHelper.writeTag(tagFromIntent,2 ,10);
 
-        }
+        checkAndInitNFC();
 
         binding.btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int price = nfcHelper.readTag(tagFromIntent, 1);
-                nfcHelper.writeTag(tagFromIntent,1 ,price - 2);
-                ExchangeRateResponse exchangeRateResponse = viewModel.getRates_from_api();
-                ShoppingItem shoppingItem = new ShoppingItem(1,1,price
-                        , price - 2
-                        , exchangeRateResponse.getRates().getEUR() * (price-2)
-                        ,1);
-                viewModel.insertShoppingItemIntoDb(shoppingItem);
-
-                Log.d(TAG, "onClick: price1 minus 2$");
+                setUpFirstBalance(1, 2, "onClick: price1 minus 2$");
             }
         });
 
         binding.btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int price = nfcHelper.readTag(tagFromIntent, 2);
-                nfcHelper.writeTag(tagFromIntent,2 ,price - 5);
-                ExchangeRateResponse exchangeRateResponse = viewModel.getRates_from_api();
-                ShoppingItem shoppingItem = new ShoppingItem(2,2,price
-                        , price - 5
-                        , exchangeRateResponse.getRates().getEUR() * (price-5)
-                        ,2);
-                viewModel.insertShoppingItemIntoDb(shoppingItem);
-                Log.d(TAG, "onClick: price1 minus 5$");
+                setUpFirstBalance(2, 5, "onClick: price1 minus 5$");
             }
         });
 
         binding.btn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                nfcHelper.writeTag(tagFromIntent,1 ,20);
-                nfcHelper.writeTag(tagFromIntent,2 ,10);
-                ExchangeRateResponse exchangeRateResponse = viewModel.getRates_from_api();
-                ShoppingItem shoppingItem = new ShoppingItem(1,1,10
-                        , 10
-                        , exchangeRateResponse.getRates().getEUR() * (10)
-                        ,1);
-                viewModel.insertShoppingItemIntoDb(shoppingItem);
-                ShoppingItem shoppingItem2 = new ShoppingItem(1,1,20
-                        , 20
-                        , exchangeRateResponse.getRates().getEUR() * (20)
-                        ,1);
-                viewModel.insertShoppingItemIntoDb(shoppingItem2);
-                Log.d(TAG, "onClick: return to initial values!!");
+                setBalancesToInit();
             }
         });
 
+    }
+
+    private void checkAndInitNFC() {
+        mAdapter = NfcAdapter.getDefaultAdapter(this);
+
+
+        Tag tagFromIntent = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        DefaultNfcHelperReppository nfcHelper = new DefaultNfcHelperReppository();
+
+        if (mAdapter == null) {
+            showMessage("error", "no_nfc");
+            finish();
+        }
+        if(String.valueOf(nfcHelper.readTag(tagFromIntent,1)) == null){
+            nfcHelper.writeTag(tagFromIntent,1 ,20);
+            nfcHelper.writeTag(tagFromIntent,2 ,10);
+        }
+    }
+
+    private void setBalancesToInit() {
+        Tag tagFromIntent = ;
+        DefaultNfcHelperReppository nfcHelper = ;
+        nfcHelper.writeTag(tagFromIntent,1 ,20);
+        nfcHelper.writeTag(tagFromIntent,2 ,10);
+        ExchangeRateResponse exchangeRateResponse = viewModel.getRates_from_api();
+        ShoppingItem shoppingItem = new ShoppingItem(1,1,10
+                , 10
+                , exchangeRateResponse.getRates().getEUR() * (10)
+                ,1);
+        viewModel.insertShoppingItemIntoDb(shoppingItem);
+        ShoppingItem shoppingItem2 = new ShoppingItem(1,1,20
+                , 20
+                , exchangeRateResponse.getRates().getEUR() * (20)
+                ,1);
+        viewModel.insertShoppingItemIntoDb(shoppingItem2);
+        Log.d(TAG, "onClick: return to initial values!!");
+    }
+
+    private void setUpFirstBalance(int i, int i2, String s) {
+        DefaultNfcHelperReppository nfcHelper = ;
+        Tag tagFromIntent = ;
+        int price = nfcHelper.readTag(tagFromIntent, i);
+        nfcHelper.writeTag(tagFromIntent, i, price - i2);
+        ExchangeRateResponse exchangeRateResponse = viewModel.getRates_from_api();
+        ShoppingItem shoppingItem = new ShoppingItem(i, i, price
+                , price - i2
+                , exchangeRateResponse.getRates().getEUR() * (price - i2)
+                , i);
+        viewModel.insertShoppingItemIntoDb(shoppingItem);
+
+        Log.d(TAG, s);
     }
 
 
